@@ -251,16 +251,28 @@
                 <input type="number" id="transightMarginPercentage" value="10.0" step="0.1" class="rounded-lg">
             </div>
             <div class="form-group">
-                <label for="swHours">Software Manpower Hours:</label>
-                <input type="number" id="swHours" value="0" step="1" class="rounded-lg">
+                <label for="swDays">Software Manpower Days:</label>
+                <input type="number" id="swDays" value="0" step="1" class="rounded-lg">
             </div>
             <div class="form-group">
-                <label for="fwHours">Firmware Manpower Hours:</label>
-                <input type="number" id="fwHours" value="0" step="1" class="rounded-lg">
+                <label for="fwDays">Firmware Manpower Days:</label>
+                <input type="number" id="fwDays" value="0" step="1" class="rounded-lg">
             </div>
             <div class="form-group">
-                <label for="hwHours">Hardware Manpower Hours:</label>
-                <input type="number" id="hwHours" value="0" step="1" class="rounded-lg">
+                <label for="hwDays">Hardware Manpower Days:</label>
+                <input type="number" id="hwDays" value="0" step="1" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="testingDays">Testing Manpower Days:</label>
+                <input type="number" id="testingDays" value="0" step="1" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="integrationDays">Integration Manpower Days:</label>
+                <input type="number" id="integrationDays" value="0" step="1" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="otherManpowerDays">Other Manpower Days:</label>
+                <input type="number" id="otherManpowerDays" value="0" step="1" class="rounded-lg">
             </div>
         </div>
         <div class="text-center mt-4">
@@ -313,6 +325,18 @@
             <div class="form-group">
                 <label for="manpowerHardware">Manpower Efforts - Hardware (INR):</label>
                 <input type="number" id="manpowerHardware" value="0.00" step="0.01" class="rounded-lg" readonly>
+            </div>
+            <div class="form-group">
+                <label for="manpowerTesting">Manpower Efforts - Testing (INR):</label>
+                <input type="number" id="manpowerTesting" value="0.00" step="0.01" class="rounded-lg" readonly>
+            </div>
+            <div class="form-group">
+                <label for="manpowerIntegration">Manpower Efforts - Integration (INR):</label>
+                <input type="number" id="manpowerIntegration" value="0.00" step="0.01" class="rounded-lg" readonly>
+            </div>
+            <div class="form-group">
+                <label for="manpowerOther">Manpower Efforts - Other (INR):</label>
+                <input type="number" id="manpowerOther" value="0.00" step="0.01" class="rounded-lg" readonly>
             </div>
         </div>
 
@@ -377,7 +401,10 @@ Phase 4: Deployment (2 weeks)</textarea>
     <script>
         // Colors for Gantt chart bars
         const ganttColors = ['#63b3ed', '#68d391', '#f6e05e', '#fc8181', '#a78bfa', '#fbd38d', '#4fd1c5', '#feb2b2'];
-        const basicManpowerRateUSD = 18; // Basic manpower cost in USD
+        const basicManpowerRateUSD_perHour = 18; // Basic manpower cost in USD per hour
+        const hoursPerDay = 8; // Assuming 8 working hours per day
+        const basicManpowerRateUSD_perDay = basicManpowerRateUSD_perHour * hoursPerDay; // Basic manpower cost in USD per day
+
         let clientRequirementDocumentName = ''; // To store the name of the uploaded document
 
         // Function to set today's date in 'DD/MM/YYYY' format
@@ -430,27 +457,35 @@ Phase 4: Deployment (2 weeks)</textarea>
             const overheadPercentage = parseFloat(document.getElementById('overheadPercentage').value);
             const transightMarginPercentage = parseFloat(document.getElementById('transightMarginPercentage').value);
             
-            const swHours = parseFloat(document.getElementById('swHours').value);
-            const fwHours = parseFloat(document.getElementById('fwHours').value);
-            const hwHours = parseFloat(document.getElementById('hwHours').value);
+            const swDays = parseFloat(document.getElementById('swDays').value);
+            const fwDays = parseFloat(document.getElementById('fwDays').value);
+            const hwDays = parseFloat(document.getElementById('hwDays').value);
+            const testingDays = parseFloat(document.getElementById('testingDays').value);
+            const integrationDays = parseFloat(document.getElementById('integrationDays').value);
+            const otherManpowerDays = parseFloat(document.getElementById('otherManpowerDays').value);
 
-            // Calculate Manpower Rates in INR
-            const swRateINR = (basicManpowerRateUSD * usdToInrExchangeRate);
-            const fwRateINR = (basicManpowerRateUSD * usdToInrExchangeRate);
-            const hwRateINR = (basicManpowerRateUSD * usdToInrExchangeRate);
+
+            // Calculate Manpower Rates in INR (per day)
+            const manpowerRateINR_perDay = (basicManpowerRateUSD_perDay * usdToInrExchangeRate);
 
             // Perform calculations for costs
             const calculatedManufacturingCost = (manufacturingHoursPerUnit * manufacturingRatePerHour).toFixed(2);
-            const calculatedManpowerSoftware = (swHours * swRateINR).toFixed(2);
-            const calculatedManpowerFirmware = (fwHours * fwRateINR).toFixed(2);
-            const calculatedManpowerHardware = (hwHours * hwRateINR).toFixed(2);
+            const calculatedManpowerSoftware = (swDays * manpowerRateINR_perDay).toFixed(2);
+            const calculatedManpowerFirmware = (fwDays * manpowerRateINR_perDay).toFixed(2);
+            const calculatedManpowerHardware = (hwDays * manpowerRateINR_perDay).toFixed(2);
+            const calculatedManpowerTesting = (testingDays * manpowerRateINR_perDay).toFixed(2);
+            const calculatedManpowerIntegration = (integrationDays * manpowerRateINR_perDay).toFixed(2);
+            const calculatedManpowerOther = (otherManpowerDays * manpowerRateINR_perDay).toFixed(2);
+
 
             const bomCost = parseFloat(document.getElementById('bomCost').value);
             const logisticsCharges = parseFloat(document.getElementById('logisticsCharges').value);
             const investment = parseFloat(document.getElementById('investment').value);
 
             // Calculate Direct Costs for Overhead calculation
-            const totalManpowerCosts = parseFloat(calculatedManpowerSoftware) + parseFloat(calculatedManpowerFirmware) + parseFloat(calculatedManpowerHardware);
+            const totalManpowerCosts = parseFloat(calculatedManpowerSoftware) + parseFloat(calculatedManpowerFirmware) + 
+                                       parseFloat(calculatedManpowerHardware) + parseFloat(calculatedManpowerTesting) + 
+                                       parseFloat(calculatedManpowerIntegration) + parseFloat(calculatedManpowerOther);
             const directCostsForOverhead = bomCost + parseFloat(calculatedManufacturingCost) + totalManpowerCosts;
             const calculatedOverHeads = (directCostsForOverhead * (overheadPercentage / 100)).toFixed(2);
 
@@ -464,6 +499,9 @@ Phase 4: Deployment (2 weeks)</textarea>
             document.getElementById('manpowerSoftware').value = calculatedManpowerSoftware;
             document.getElementById('manpowerFirmware').value = calculatedManpowerFirmware;
             document.getElementById('manpowerHardware').value = calculatedManpowerHardware;
+            document.getElementById('manpowerTesting').value = calculatedManpowerTesting;
+            document.getElementById('manpowerIntegration').value = calculatedManpowerIntegration;
+            document.getElementById('manpowerOther').value = calculatedManpowerOther;
             document.getElementById('overHeads').value = calculatedOverHeads;
             document.getElementById('transightMargin').value = calculatedTransightMargin;
 
@@ -544,6 +582,10 @@ Phase 4: Deployment (2 weeks)</textarea>
             const manpowerSoftware = parseFloat(document.getElementById('manpowerSoftware').value);
             const manpowerFirmware = parseFloat(document.getElementById('manpowerFirmware').value);
             const manpowerHardware = parseFloat(document.getElementById('manpowerHardware').value);
+            const manpowerTesting = parseFloat(document.getElementById('manpowerTesting').value); // New
+            const manpowerIntegration = parseFloat(document.getElementById('manpowerIntegration').value); // New
+            const manpowerOther = parseFloat(document.getElementById('manpowerOther').value); // New
+
 
             const additionalCharges = document.getElementById('additionalCharges').value.split('\n').filter(line => line.trim() !== '');
             const termsAndConditions = document.getElementById('termsAndConditions').value.split('\n').filter(line => line.trim() !== '');
@@ -563,7 +605,7 @@ Phase 4: Deployment (2 weeks)</textarea>
             // Calculate derived values
             const bomManufacturingCost = (bomCost + manufacturingCost).toFixed(2);
             const totalUnitPrice = (bomCost + manufacturingCost + overHeads + transightMargin + logisticsCharges + investment).toFixed(2);
-            const totalOtherProjectCosts = (otherSoftwareCosts + manpowerSoftware + manpowerFirmware + manpowerHardware).toFixed(2);
+            const totalOtherProjectCosts = (otherSoftwareCosts + manpowerSoftware + manpowerFirmware + manpowerHardware + manpowerTesting + manpowerIntegration + manpowerOther).toFixed(2); // Updated
 
             // Get Gantt chart HTML generated by calculateAllCostsAndSchedule
             const ganttChartHtml = document.getElementById('ganttPreviewContainer').dataset.ganttChartHtml || '';
@@ -651,6 +693,9 @@ if (!hideDetailedBreakdown) {
         <tr><td>Manpower Efforts - Software</td><td>${manpowerSoftware.toFixed(2)}</td></tr>
         <tr><td>Manpower Efforts - Firmware</td><td>${manpowerFirmware.toFixed(2)}</td></tr>
         <tr><td>Manpower Efforts - Hardware</td><td>${manpowerHardware.toFixed(2)}</td></tr>
+        <tr><td>Manpower Efforts - Testing</td><td>${manpowerTesting.toFixed(2)}</td></tr>
+        <tr><td>Manpower Efforts - Integration</td><td>${manpowerIntegration.toFixed(2)}</td></tr>
+        <tr><td>Manpower Efforts - Other</td><td>${manpowerOther.toFixed(2)}</td></tr>
         <tr><td><strong>Total Other Project Costs</strong></td><td><strong>${totalOtherProjectCosts}</strong></td></tr>
     </tbody>
 </table>
@@ -852,19 +897,26 @@ ${ganttChartHtml}
             const overheadPercentage = parseFloat(document.getElementById('overheadPercentage').value);
             const transightMarginPercentage = parseFloat(document.getElementById('transightMarginPercentage').value);
 
-            const swHours = parseFloat(document.getElementById('swHours').value);
-            const fwHours = parseFloat(document.getElementById('fwHours').value);
-            const hwHours = parseFloat(document.getElementById('hwHours').value);
+            const swDays = parseFloat(document.getElementById('swDays').value);
+            const fwDays = parseFloat(document.getElementById('fwDays').value);
+            const hwDays = parseFloat(document.getElementById('hwDays').value);
+            const testingDays = parseFloat(document.getElementById('testingDays').value); // New
+            const integrationDays = parseFloat(document.getElementById('integrationDays').value); // New
+            const otherManpowerDays = parseFloat(document.getElementById('otherManpowerDays').value); // New
+
             const calculatedManpowerSoftware = parseFloat(document.getElementById('manpowerSoftware').value);
             const calculatedManpowerFirmware = parseFloat(document.getElementById('manpowerFirmware').value);
             const calculatedManpowerHardware = parseFloat(document.getElementById('manpowerHardware').value);
+            const calculatedManpowerTesting = parseFloat(document.getElementById('manpowerTesting').value); // New
+            const calculatedManpowerIntegration = parseFloat(document.getElementById('manpowerIntegration').value); // New
+            const calculatedManpowerOther = parseFloat(document.getElementById('manpowerOther').value); // New
 
             const logisticsCharges = parseFloat(document.getElementById('logisticsCharges').value);
             const investment = parseFloat(document.getElementById('investment').value);
             const calculatedOverHeads = parseFloat(document.getElementById('overHeads').value);
             const calculatedTransightMargin = parseFloat(document.getElementById('transightMargin').value);
 
-            const totalManpowerCosts = calculatedManpowerSoftware + calculatedManpowerFirmware + calculatedManpowerHardware;
+            const totalManpowerCosts = calculatedManpowerSoftware + calculatedManpowerFirmware + calculatedManpowerHardware + calculatedManpowerTesting + calculatedManpowerIntegration + calculatedManpowerOther; // Updated
             const directCostsForOverhead = bomCost + calculatedManufacturingCost + totalManpowerCosts;
             const totalCostBeforeMargin = bomCost + calculatedManufacturingCost + calculatedOverHeads + logisticsCharges + investment + totalManpowerCosts;
             const totalUnitPrice = (bomCost + calculatedManufacturingCost + calculatedOverHeads + calculatedTransightMargin + logisticsCharges + investment).toFixed(2);
@@ -883,9 +935,12 @@ ${ganttChartHtml}
                         <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">USD to INR Exchange Rate</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${usdToInrExchangeRate.toFixed(2)}</td></tr>
                         <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Overhead Percentage</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${overheadPercentage.toFixed(2)}%</td></tr>
                         <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Transight Margin Percentage</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${transightMarginPercentage.toFixed(2)}%</td></tr>
-                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Software Manpower Hours</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${swHours} hours</td></tr>
-                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Firmware Manpower Hours</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${fwHours} hours</td></tr>
-                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Hardware Manpower Hours</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${hwHours} hours</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Software Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${swDays} days</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Firmware Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${fwDays} days</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Hardware Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${hwDays} days</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Testing Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${testingDays} days</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Integration Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${integrationDays} days</td></tr>
+                        <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Other Manpower Days</td><td style="border: 1px solid #ccc; padding: 0.75rem;">${otherManpowerDays} days</td></tr>
                         <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Logistics Charges</td><td style="border: 1px solid #ccc; padding: 0.75rem;">INR ${logisticsCharges.toFixed(2)}</td></tr>
                         <tr><td style="border: 1px solid #ccc; padding: 0.75rem;">Investment</td><td style="border: 1px solid #ccc; padding: 0.75rem;">INR ${investment.toFixed(2)}</td></tr>
                     </table>
@@ -900,22 +955,37 @@ ${ganttChartHtml}
                         </tr>
                         <tr>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Software</td>
-                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${swHours} hours * ${basicManpowerRateUSD} USD/hour * ${usdToInrExchangeRate.toFixed(2)} INR/USD</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${swDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerSoftware}</td>
                         </tr>
                         <tr>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Firmware</td>
-                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${fwHours} hours * ${basicManpowerRateUSD} USD/hour * ${usdToInrExchangeRate.toFixed(2)} INR/USD</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${fwDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerFirmware}</td>
                         </tr>
                         <tr>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Hardware</td>
-                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${hwHours} hours * ${basicManpowerRateUSD} USD/hour * ${usdToInrExchangeRate.toFixed(2)} INR/USD</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${hwDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerHardware}</td>
                         </tr>
                         <tr>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Testing</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${testingDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerTesting}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Integration</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${integrationDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerIntegration}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">Manpower Efforts - Other</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${otherManpowerDays} days * ${basicManpowerRateUSD_perDay.toFixed(2)} INR/day</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">${calculatedManpowerOther}</td>
+                        </tr>
+                        <tr>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">Total Manpower Costs</td>
-                            <td style="border: 1px solid #ccc; padding: 0.75rem;">Software + Firmware + Hardware Manpower Costs</td>
+                            <td style="border: 1px solid #ccc; padding: 0.75rem;">Software + Firmware + Hardware + Testing + Integration + Other Manpower Costs</td>
                             <td style="border: 1px solid #ccc; padding: 0.75rem;">${totalManpowerCosts.toFixed(2)}</td>
                         </tr>
                         <tr>
